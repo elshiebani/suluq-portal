@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لوحة الإدارة - تجديد القيد - المعهد العالي للعلوم والتقنية سلوق</title>
+  <title>لوحة الإدارة - المعهد العالي للعلوم والتقنية سلوق</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -23,7 +23,7 @@
         <div class="text-center mb-4">
           <img src="logo.png" alt="شعار المعهد العالي للعلوم والتقنية سلوق" class="institute-logo mb-3">
           <h5 class="header-title mb-1">المعهد العالي للعلوم والتقنية - سلوق</h5>
-          <p class="text-muted small mb-0">منظومة إدارة واعتماد قرارات تجديد القيد</p>
+          <p class="text-muted small mb-0">منظومة إدارة واعتماد قرارات القبول</p>
         </div>
 
         <hr class="mb-4">
@@ -42,9 +42,10 @@
           </select>
         </div>
 
+        <!-- خانة سبب الرفض -->
         <div class="mb-3" id="reasonBox" style="display: none;">
-          <label for="rejectionReason" class="form-label fw-semibold text-danger">تبرير وسبب الرفض:</label>
-          <textarea id="rejectionReason" class="form-control" rows="3" placeholder="اكتب سبب الرفض بالتفصيل..."></textarea>
+          <label for="rejectionReason" class="form-label fw-semibold text-danger">سبب وتبرير الرفض:</label>
+          <textarea id="rejectionReason" class="form-control" rows="3" placeholder="اكتب سبب الرفض بالتفصيل ليراه الطالب..."></textarea>
         </div>
 
         <button class="btn btn-primary w-100 fw-semibold py-2 mt-2" onclick="saveDecision()">حفظ القرار الرسمي</button>
@@ -64,7 +65,7 @@
   function toggleReasonBox() {
     const status = document.getElementById('statusSelect').value;
     const reasonBox = document.getElementById('reasonBox');
-    reasonBox.style.display = (status === 'rejected') ? 'block' : 'none';
+    reasonBox.style.display = (status === 'rejected' || status === 'needs_fix') ? 'block' : 'none';
   }
 
   async function saveDecision() {
@@ -78,14 +79,14 @@
       return;
     }
 
-    if (status === 'rejected' && !reason) {
-      alertBox.innerHTML = '<div class="alert alert-danger text-center small">يرجى إدخال سبب وتبرير الرفض.</div>';
+    if ((status === 'rejected' || status === 'needs_fix') && !reason) {
+      alertBox.innerHTML = '<div class="alert alert-danger text-center small">يرجى كتابة سبب التفصيل.</div>';
       return;
     }
 
-    alertBox.innerHTML = '<div class="alert alert-info text-center small">جاري اتصال بالسيرفر وحفظ القرار...</div>';
+    alertBox.innerHTML = '<div class="alert alert-info text-center small">جاري حفظ القرار...</div>';
 
-    const finalReason = status === 'rejected' ? reason : (status === 'needs_fix' ? 'توجه إلى قسم الدراسة والامتحانات لاستكمال المستندات الناقصة.' : 'تم قبول الطلب وتجديد القيد بنجاح.');
+    const finalReason = (status === 'approved') ? 'تم اعتماد القبول بنجاح.' : reason;
 
     try {
       const { data: existing, error: selectError } = await _supabase
@@ -112,7 +113,7 @@
 
       if (error) throw error;
 
-      alertBox.innerHTML = '<div class="alert alert-success text-center small">تم اعتماد القرار وحفظه بنجاح في قاعدة البيانات!</div>';
+      alertBox.innerHTML = '<div class="alert alert-success text-center small">تم حفظ القرار الرسمي بنجاح.</div>';
       document.getElementById('nationalId').value = '';
       document.getElementById('rejectionReason').value = '';
       toggleReasonBox();
