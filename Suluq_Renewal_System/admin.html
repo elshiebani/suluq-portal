@@ -59,9 +59,9 @@
 </div>
 
 <script>
-  // بيانات الربط بـ Supabase
+  // مفاتيح الاتصال المدمجة بـ Supabase
   const SUPABASE_URL = 'https://islfpajoqjdjyqfmytjx.supabase.co';
-  const SUPABASE_ANON_KEY = 'ضع_مفتاح_ANON_KEY_الخاص_بالمشروع_هنا';
+  const SUPABASE_ANON_KEY = 'sb_publishable_LuY9qIRrZBGki6nS0i8TNQ_rlpPrlJC';
 
   const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -91,7 +91,6 @@
 
     const finalReason = status === 'rejected' ? reason : (status === 'needs_fix' ? 'توجه إلى قسم الدراسة والامتحانات لاستكمال المستندات الناقصة.' : 'تم قبول الطلب وتجديد القيد بنجاح.');
 
-    // البحث في جدول students للتحديث أو الإضافة
     const { data: existing } = await supabase
       .from('students')
       .select('id')
