@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>استعلام تجديد القيد - المعهد العالي للعلوم والتقنية سلوق</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body { background-color: #eef2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .card { border-radius: 8px; border: 1px solid #dcdfe6; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .institute-logo { max-width: 110px; height: auto; }
+    .header-title { color: #1a365d; font-weight: 700; }
+    .btn-success { background-color: #198754; border-color: #198754; }
+  </style>
+</head>
+<body class="py-5">
+
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card p-4 text-center">
+        <!-- Logo and Header -->
+        <div class="mb-4">
+          <img src="logo.png" alt="شعار المعهد العالي للعلوم والتقنية سلوق" class="institute-logo mb-3">
+          <h5 class="header-title mb-1">المعهد العالي للعلوم والتقنية - سلوق</h5>
+          <p class="text-muted small mb-0">بوابة استعلام نتائج تجديد القيد والقبول</p>
+        </div>
+
+        <hr class="mb-4">
+
+        <div class="mb-3 text-start">
+          <label for="searchNationalId" class="form-label fw-semibold">الرقم الوطني للطالب:</label>
+          <input type="text" id="searchNationalId" class="form-control" placeholder="أدخل الرقم الوطني للاستعلام">
+        </div>
+
+        <button class="btn btn-success w-100 fw-semibold py-2" onclick="checkStatus()">استعلام عن حالة الطلب</button>
+
+        <div id="resultBox" class="mt-4" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://islfpajoqjdjyqfmytjx.supabase.co';
+  const SUPABASE_ANON_KEY = 'ضع_مفتاح_ANON_KEY_الخاص_بالمشروع_هنا';
+
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function triggerCelebration() {
+    var count = 200;
+    var defaults = { origin: { y: 0.7 } };
+
+    function fire(particleRatio, opts) {
+      confetti(Object.assign({}, defaults, opts, {
+        particleCount: Math.floor(count * particleRatio)
+      }));
+    }
+
+    fire(0.25, { spread: 26, startVelocity: 55 });
+    fire(0.2, { spread: 60 });
+    fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+    fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+    fire(0.1, { spread: 120, startVelocity: 45 });
+  }
+
+  async function checkStatus() {
+    const nationalId = document.getElementById('searchNationalId').value.trim();
+    const resultBox = document.getElementById('resultBox');
+
+    if (!nationalId) {
+      alert('يرجى كتابة الرقم الوطني.');
+      return;
+    }
+
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-success"></div> جاري البحث...</div>';
+
+    const { data, error } = await supabase
+      .from('students')
+      .select('*')
+      .eq('national_id', nationalId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      resultBox.innerHTML = `<div class="alert alert-danger text-center small">حدث خطأ أثناء البحث: ${error.message}</div>`;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      resultBox.innerHTML = '<div class="alert alert-warning text-center small">لم يتم العثور على بيانات مسجلة لهذا الرقم الوطني.</div>';
+      return;
+    }
+
+    const record = data[0];
+
+    if (record.status === 'approved') {
+      resultBox.innerHTML = `
+        <div class="alert alert-success p-4 text-center">
+          <h4 class="fw-bold mb-2 text-success">ألف مبروك! تم قبولكم</h4>
+          <p class="mb-0 fs-6">تمت المراجعة واقتطاع الرسوم وتأكيد تجديد قيدكم بنجاح للعام الدراسي الحالي.</p>
+        </div>`;
+      triggerCelebration();
+
+    } else if (record.status === 'needs_fix') {
+      resultBox.innerHTML = `
+        <div class="alert alert-warning p-3 text-start">
+          <h6 class="fw-bold mb-2">حالة الطلب: إجراءات ناقصة</h6>
+          <p class="mb-0 small">${record.rejection_reason || 'توجه إلى قسم الدراسة والامتحانات لاستكمال المستندات الناقصة.'}</p>
+        </div>`;
+    } else if (record.status === 'rejected') {
+      resultBox.innerHTML = `
+        <div class="alert alert-danger p-3 text-start">
+          <h6 class="fw-bold mb-2">حالة الطلب: مرفوض</h6>
+          <hr class="my-2">
+          <p class="mb-1 fw-bold small">سبب التبرير الإداري:</p>
+          <p class="mb-0 small">${record.rejection_reason || 'يرجى مراجعة إدارة المعهد.'}</p>
+        </div>`;
+    } else {
+      resultBox.innerHTML = `
+        <div class="alert alert-info p-3 text-center">
+          <h6 class="fw-bold mb-1">حالة الطلب: قيد المراجعة</h6>
+          <p class="mb-0 small">طلبكم قيد الدراسة والمراجعة حالياً من قبل قسم الدراسة والامتحانات.</p>
+        </div>`;
+    }
+  }
+</script>
+
+</body>
+</html>
