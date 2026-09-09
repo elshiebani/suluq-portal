@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>استعلام تجديد القيد - المعهد العالي للعلوم والتقنية سلوق</title>
+  <title>استعلام القبول - المعهد العالي للعلوم والتقنية سلوق</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -24,7 +24,7 @@
         <div class="mb-4">
           <img src="logo.png" alt="شعار المعهد العالي للعلوم والتقنية سلوق" class="institute-logo mb-3">
           <h5 class="header-title mb-1">المعهد العالي للعلوم والتقنية - سلوق</h5>
-          <p class="text-muted small mb-0">بوابة استعلام نتائج تجديد القيد والقبول</p>
+          <p class="text-muted small mb-0">بوابة استعلام نتائج القبول</p>
         </div>
 
         <hr class="mb-4">
@@ -75,7 +75,7 @@
     }
 
     resultBox.style.display = 'block';
-    resultBox.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-success"></div> جاري البحث في النظام...</div>';
+    resultBox.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-success"></div> جاري البحث...</div>';
 
     try {
       const { data, error } = await _supabase
@@ -95,10 +95,8 @@
       if (record.status === 'approved') {
         resultBox.innerHTML = `
           <div class="alert alert-success p-4 text-center">
-            <h4 class="fw-bold mb-2 text-success">ألف مبروك! تم قبولكم</h4>
-            <p class="mb-0 fs-6">تهانينا! تم اعتماد قبولكم بنجاح
-
-نبارك لكم القبول النهائي للعام الدراسي خريف 2026 - 2027 م، مع أطيب أمنياتنا لكم بدوام التوفيق والنجاح .</p>
+            <h4 class="fw-bold mb-2 text-success">تهانينا! تم اعتماد قبولكم بنجاح</h4>
+            <p class="mb-0 fs-6">نبارك لكم القبول النهائي للعام الدراسي <strong>خريف 2026 - 2027 م</strong>، مع أطيب أمنياتنا لكم بدوام التوفيق والنجاح.</p>
           </div>`;
         triggerCelebration();
 
@@ -106,21 +104,21 @@
         resultBox.innerHTML = `
           <div class="alert alert-warning p-3 text-start">
             <h6 class="fw-bold mb-2">حالة الطلب: إجراءات ناقصة</h6>
-            <p class="mb-0 small">${record.rejection_reason || 'توجه إلى قسم الدراسة والامتحانات لاستكمال المستندات الناقصة.'}</p>
+            <p class="mb-0 small">${record.rejection_reason || 'يرجى مراجعة إدارة المعهد لاستكمال الإجراءات.'}</p>
           </div>`;
       } else if (record.status === 'rejected') {
         resultBox.innerHTML = `
           <div class="alert alert-danger p-3 text-start">
-            <h6 class="fw-bold mb-2">حالة الطلب: مرفوض</h6>
+            <h6 class="fw-bold mb-2">حالة الطلب: غير مقبول</h6>
             <hr class="my-2">
             <p class="mb-1 fw-bold small">سبب التبرير الإداري:</p>
-            <p class="mb-0 small">${record.rejection_reason || 'يرجى مراجعة إدارة المعهد.'}</p>
+            <p class="mb-0 small">${record.rejection_reason || 'لم يتم استيفاء شروط القبول.'}</p>
           </div>`;
       } else {
         resultBox.innerHTML = `
           <div class="alert alert-info p-3 text-center">
             <h6 class="fw-bold mb-1">حالة الطلب: قيد المراجعة</h6>
-            <p class="mb-0 small">طلبكم قيد الدراسة والمراجعة حالياً من قبل قسم الدراسة والامتحانات.</p>
+            <p class="mb-0 small">طلبكم قيد الدراسة والمراجعة حالياً من قبل قسم التسجيل والقبول.</p>
           </div>`;
       }
 
