@@ -21,7 +21,6 @@
   <div class="row justify-content-center">
     <div class="col-md-6">
       <div class="card p-4 text-center">
-        <!-- Logo and Header -->
         <div class="mb-4">
           <img src="logo.png" alt="شعار المعهد العالي للعلوم والتقنية سلوق" class="institute-logo mb-3">
           <h5 class="header-title mb-1">المعهد العالي للعلوم والتقنية - سلوق</h5>
@@ -44,11 +43,10 @@
 </div>
 
 <script>
-  // مفاتيح الاتصال المدمجة بـ Supabase
   const SUPABASE_URL = 'https://islfpajoqjdjyqfmytjx.supabase.co';
   const SUPABASE_ANON_KEY = 'sb_publishable_LuY9qIRrZBGki6nS0i8TNQ_rlpPrlJC';
 
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   function triggerCelebration() {
     var count = 200;
@@ -77,54 +75,55 @@
     }
 
     resultBox.style.display = 'block';
-    resultBox.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-success"></div> جاري البحث...</div>';
+    resultBox.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-success"></div> جاري البحث في النظام...</div>';
 
-    const { data, error } = await supabase
-      .from('students')
-      .select('*')
-      .eq('national_id', nationalId)
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await _supabase
+        .from('students')
+        .select('*')
+        .eq('national_id', nationalId);
 
-    if (error) {
-      resultBox.innerHTML = `<div class="alert alert-danger text-center small">حدث خطأ أثناء البحث: ${error.message}</div>`;
-      return;
-    }
+      if (error) throw error;
 
-    if (!data || data.length === 0) {
-      resultBox.innerHTML = '<div class="alert alert-warning text-center small">لم يتم العثور على بيانات مسجلة لهذا الرقم الوطني.</div>';
-      return;
-    }
+      if (!data || data.length === 0) {
+        resultBox.innerHTML = '<div class="alert alert-warning text-center small">لم يتم العثور على بيانات مسجلة لهذا الرقم الوطني.</div>';
+        return;
+      }
 
-    const record = data[0];
+      const record = data[data.length - 1];
 
-    if (record.status === 'approved') {
-      resultBox.innerHTML = `
-        <div class="alert alert-success p-4 text-center">
-          <h4 class="fw-bold mb-2 text-success">ألف مبروك! تم قبولكم</h4>
-          <p class="mb-0 fs-6">تمت المراجعة واقتطاع الرسوم وتأكيد تجديد قيدكم بنجاح للعام الدراسي الحالي.</p>
-        </div>`;
-      triggerCelebration();
+      if (record.status === 'approved') {
+        resultBox.innerHTML = `
+          <div class="alert alert-success p-4 text-center">
+            <h4 class="fw-bold mb-2 text-success">ألف مبروك! تم قبولكم</h4>
+            <p class="mb-0 fs-6">تمت المراجعة واقتطاع الرسوم وتأكيد تجديد قيدكم بنجاح للعام الدراسي الحالي.</p>
+          </div>`;
+        triggerCelebration();
 
-    } else if (record.status === 'needs_fix') {
-      resultBox.innerHTML = `
-        <div class="alert alert-warning p-3 text-start">
-          <h6 class="fw-bold mb-2">حالة الطلب: إجراءات ناقصة</h6>
-          <p class="mb-0 small">${record.rejection_reason || 'توجه إلى قسم الدراسة والامتحانات لاستكمال المستندات الناقصة.'}</p>
-        </div>`;
-    } else if (record.status === 'rejected') {
-      resultBox.innerHTML = `
-        <div class="alert alert-danger p-3 text-start">
-          <h6 class="fw-bold mb-2">حالة الطلب: مرفوض</h6>
-          <hr class="my-2">
-          <p class="mb-1 fw-bold small">سبب التبرير الإداري:</p>
-          <p class="mb-0 small">${record.rejection_reason || 'يرجى مراجعة إدارة المعهد.'}</p>
-        </div>`;
-    } else {
-      resultBox.innerHTML = `
-        <div class="alert alert-info p-3 text-center">
-          <h6 class="fw-bold mb-1">حالة الطلب: قيد المراجعة</h6>
-          <p class="mb-0 small">طلبكم قيد الدراسة والمراجعة حالياً من قبل قسم الدراسة والامتحانات.</p>
-        </div>`;
+      } else if (record.status === 'needs_fix') {
+        resultBox.innerHTML = `
+          <div class="alert alert-warning p-3 text-start">
+            <h6 class="fw-bold mb-2">حالة الطلب: إجراءات ناقصة</h6>
+            <p class="mb-0 small">${record.rejection_reason || 'توجه إلى قسم الدراسة والامتحانات لاستكمال المستندات الناقصة.'}</p>
+          </div>`;
+      } else if (record.status === 'rejected') {
+        resultBox.innerHTML = `
+          <div class="alert alert-danger p-3 text-start">
+            <h6 class="fw-bold mb-2">حالة الطلب: مرفوض</h6>
+            <hr class="my-2">
+            <p class="mb-1 fw-bold small">سبب التبرير الإداري:</p>
+            <p class="mb-0 small">${record.rejection_reason || 'يرجى مراجعة إدارة المعهد.'}</p>
+          </div>`;
+      } else {
+        resultBox.innerHTML = `
+          <div class="alert alert-info p-3 text-center">
+            <h6 class="fw-bold mb-1">حالة الطلب: قيد المراجعة</h6>
+            <p class="mb-0 small">طلبكم قيد الدراسة والمراجعة حالياً من قبل قسم الدراسة والامتحانات.</p>
+          </div>`;
+      }
+
+    } catch (err) {
+      resultBox.innerHTML = `<div class="alert alert-danger text-center small">حدث خطأ أثناء البحث: ${err.message || 'تعذر الاتصال بالسيرفر'}</div>`;
     }
   }
 </script>
